@@ -7,6 +7,8 @@ export type RegisteredMember = {
   phone: string
   citizenId: string
   shopPageUrl: string
+  storefrontImage?: string
+  storefrontImageUrl?: string
 }
 
 export const fallbackMember: RegisteredMember = {
@@ -16,6 +18,7 @@ export const fallbackMember: RegisteredMember = {
   phone: '0812345678',
   citizenId: '1234567890123',
   shopPageUrl: 'https://facebook.com/your-page',
+  storefrontImageUrl: '',
 }
 
 export const getRegisteredMember = async () => {

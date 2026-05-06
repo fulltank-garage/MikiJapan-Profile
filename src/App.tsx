@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import mikiJapanLogo from './assets/miki-japan-logo.jpg'
 import {
   fallbackMember,
   getRegisteredMember,
@@ -17,9 +18,11 @@ const memberEndpoint = import.meta.env.VITE_MEMBER_PROFILE_ENDPOINT
 
 const statusText: Record<LoadState, string> = {
   loading: 'กำลังโหลดข้อมูล',
-  ready: 'ข้อมูลสมาชิก',
+  ready: 'ข้อมูลจากการสมัคร',
   fallback: 'ข้อมูลตัวอย่าง',
 }
+
+const getDisplayValue = (value: string) => value || '-'
 
 const getMemberFields = (member: RegisteredMember): MemberField[] => [
   { label: 'ชื่อ', value: member.firstName },
@@ -65,70 +68,109 @@ function App() {
     }
   }, [])
 
-  const fullName = `${member.firstName} ${member.lastName}`.trim()
   const fields = getMemberFields(member)
+  const storefrontImage = member.storefrontImageUrl ?? member.storefrontImage
 
   return (
     <main className="min-h-dvh bg-[var(--color-bg)] text-[var(--color-text)]">
-      <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-4 py-5">
-        <header className="border-b border-[var(--color-border)] pb-5">
+      <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
+        <header className="sticky top-0 z-10 border-b border-[var(--color-border)] bg-[color:var(--color-surface)]/95 px-4 pb-3 pt-[calc(env(safe-area-inset-top)+14px)] backdrop-blur">
           <div className="flex items-center gap-3">
-            <div className="grid size-12 shrink-0 place-items-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface-strong)] text-xl font-semibold text-[var(--color-primary-dark)] shadow-sm">
-              み
-            </div>
+            <img
+              alt="Miki Japan"
+              className="size-10 shrink-0 rounded-full border border-[var(--color-border)] object-cover shadow-sm"
+              height="40"
+              src={mikiJapanLogo}
+              width="40"
+            />
             <div className="min-w-0">
               <p className="truncate text-sm font-medium text-[var(--color-muted)]">
                 Miki Japan
               </p>
-              <h1 className="truncate text-xl font-semibold text-[var(--color-text)]">
+              <h1 className="truncate text-lg font-semibold text-[var(--color-text)]">
                 ข้อมูลสมาชิก
               </h1>
             </div>
           </div>
         </header>
 
-        <section className="py-5">
-          <div className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-sm">
-            <div className="flex items-start justify-between gap-4">
-              <div className="min-w-0">
-                <p className="text-sm font-semibold uppercase text-[var(--color-primary)]">
-                  {statusText[loadState]}
-                </p>
-                <h2 className="mt-2 truncate text-2xl font-semibold text-[var(--color-text)]">
-                  {fullName || '-'}
-                </h2>
-                <p className="mt-1 text-sm text-[var(--color-muted)]">
-                  {member.nickname ? `ชื่อเล่น ${member.nickname}` : 'ไม่มีชื่อเล่น'}
-                </p>
-              </div>
-            </div>
+        <section className="flex-1 px-4 py-5">
+          <div className="mb-5">
+            <p className="text-[15px] leading-6 text-[var(--color-muted)]">
+              ข้อมูลผู้สมัคร ลิงก์ร้านหรือเพจ และรูปหน้าร้านสำหรับติดต่อกลับ
+            </p>
+          </div>
 
-            <dl className="mt-5 divide-y divide-[var(--color-border)]">
-              {fields.map((field) => (
+          <div
+            className={[
+              'mb-4 rounded-md border px-4 py-3 text-sm leading-6',
+              loadState === 'ready'
+                ? 'border-[color:var(--color-primary)]/25 bg-[var(--color-surface-strong)] text-[var(--color-primary-dark)]'
+                : 'border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-muted)]',
+            ].join(' ')}
+            role="status"
+          >
+            {statusText[loadState]}
+          </div>
+
+          <div className="space-y-4 pb-[calc(env(safe-area-inset-bottom)+24px)]">
+            <div className="grid grid-cols-2 gap-3">
+              {fields.slice(0, 2).map((field) => (
                 <div
-                  className="grid gap-1 py-4 first:pt-0 last:pb-0"
+                  className="block text-sm font-medium text-[var(--color-text)]"
                   key={field.label}
                 >
-                  <dt className="text-sm font-medium text-[var(--color-muted)]">
-                    {field.label}
-                  </dt>
-                  <dd className="break-words text-base font-semibold leading-7 text-[var(--color-text)]">
-                    {field.href ? (
-                      <a
-                        className="text-[var(--color-primary-dark)] underline decoration-[color:var(--color-primary)]/35 underline-offset-4"
-                        href={field.href}
-                        rel="noreferrer"
-                        target="_blank"
-                      >
-                        {field.value || '-'}
-                      </a>
-                    ) : (
-                      field.value || '-'
-                    )}
-                  </dd>
+                  {field.label}
+                  <div className="mt-1.5 flex min-h-12 w-full items-center rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-base text-[var(--color-text)]">
+                    <span className="break-words">
+                      {getDisplayValue(field.value)}
+                    </span>
+                  </div>
                 </div>
               ))}
-            </dl>
+            </div>
+
+            {fields.slice(2).map((field) => (
+              <div
+                className="block text-sm font-medium text-[var(--color-text)]"
+                key={field.label}
+              >
+                {field.label}
+                <div className="mt-1.5 flex min-h-12 w-full items-center rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-base text-[var(--color-text)]">
+                  {field.href && field.value ? (
+                    <a
+                      className="break-all text-[var(--color-primary-dark)] underline decoration-[color:var(--color-primary)]/35 underline-offset-4"
+                      href={field.href}
+                      rel="noreferrer"
+                      target="_blank"
+                    >
+                      {field.value}
+                    </a>
+                  ) : (
+                    <span className="break-words">
+                      {getDisplayValue(field.value)}
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+
+            <div className="block text-sm font-medium text-[var(--color-text)]">
+              รูปหน้าร้าน
+              <div className="mt-1.5 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] p-3">
+                {storefrontImage ? (
+                  <img
+                    alt="รูปหน้าร้าน"
+                    className="aspect-[4/3] w-full rounded-md object-cover"
+                    src={storefrontImage}
+                  />
+                ) : (
+                  <div className="grid aspect-[4/3] w-full place-items-center rounded-md bg-[var(--color-surface-strong)] px-5 text-center text-sm leading-6 text-[var(--color-muted)]">
+                    ยังไม่มีรูปหน้าร้าน
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </section>
       </div>
