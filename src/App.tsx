@@ -93,7 +93,7 @@ function App() {
                   key={field.label}
                 >
                   {field.label}
-                  <div className="mt-1.5 flex min-h-12 w-full items-center rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-base text-[var(--color-text)]">
+                  <div className="mt-1.5 flex min-h-12 w-full items-center rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-base text-[var(--color-text)]">
                     <span className="break-words">
                       {getDisplayValue(field.value)}
                     </span>
@@ -108,7 +108,7 @@ function App() {
                 key={field.label}
               >
                 {field.label}
-                <div className="mt-1.5 flex min-h-12 w-full items-center rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-base text-[var(--color-text)]">
+                <div className="mt-1.5 flex min-h-12 w-full items-center rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-base text-[var(--color-text)]">
                   {field.href && field.value ? (
                     <a
                       className="break-all text-[var(--color-primary-dark)] underline decoration-[color:var(--color-primary)]/35 underline-offset-4"
@@ -129,15 +129,15 @@ function App() {
 
             <div className="block text-sm font-medium text-[var(--color-text)]">
               รูปหน้าร้าน
-              <div className="mt-1.5 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] p-3">
+              <div className="mt-1.5 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3">
                 {storefrontImage ? (
                   <img
                     alt="รูปหน้าร้าน"
-                    className="aspect-[4/3] w-full rounded-md object-cover"
+                    className="aspect-[4/3] w-full rounded-xl object-cover"
                     src={storefrontImage}
                   />
                 ) : (
-                  <div className="grid aspect-[4/3] w-full place-items-center rounded-md bg-[var(--color-surface-strong)] px-5 text-center text-sm leading-6 text-[var(--color-muted)]">
+                  <div className="grid aspect-[4/3] w-full place-items-center rounded-xl bg-[var(--color-surface-strong)] px-5 text-center text-sm leading-6 text-[var(--color-muted)]">
                     ยังไม่มีรูปหน้าร้าน
                   </div>
                 )}
