@@ -6,8 +6,6 @@ import {
   type RegisteredMember,
 } from './services/memberService'
 
-type LoadState = 'loading' | 'ready' | 'fallback'
-
 type MemberField = {
   label: string
   value: string
@@ -15,12 +13,6 @@ type MemberField = {
 }
 
 const memberEndpoint = import.meta.env.VITE_MEMBER_PROFILE_ENDPOINT
-
-const statusText: Record<LoadState, string> = {
-  loading: 'กำลังโหลดข้อมูล',
-  ready: 'ข้อมูลจากการสมัคร',
-  fallback: 'ข้อมูลตัวอย่าง',
-}
 
 const getDisplayValue = (value: string) => value || '-'
 
@@ -39,9 +31,6 @@ const getMemberFields = (member: RegisteredMember): MemberField[] => [
 
 function App() {
   const [member, setMember] = useState<RegisteredMember>(fallbackMember)
-  const [loadState, setLoadState] = useState<LoadState>(
-    memberEndpoint ? 'loading' : 'fallback',
-  )
 
   useEffect(() => {
     if (!memberEndpoint) {
@@ -54,14 +43,9 @@ function App() {
       .then((memberData) => {
         if (!ignore) {
           setMember(memberData)
-          setLoadState('ready')
         }
       })
-      .catch(() => {
-        if (!ignore) {
-          setLoadState('fallback')
-        }
-      })
+      .catch(() => undefined)
 
     return () => {
       ignore = true
@@ -99,18 +83,6 @@ function App() {
             <p className="text-[15px] leading-6 text-[var(--color-muted)]">
               ข้อมูลผู้สมัคร ลิงก์ร้านหรือเพจ และรูปหน้าร้านสำหรับติดต่อกลับ
             </p>
-          </div>
-
-          <div
-            className={[
-              'mb-4 rounded-md border px-4 py-3 text-sm leading-6',
-              loadState === 'ready'
-                ? 'border-[color:var(--color-primary)]/25 bg-[var(--color-surface-strong)] text-[var(--color-primary-dark)]'
-                : 'border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-muted)]',
-            ].join(' ')}
-            role="status"
-          >
-            {statusText[loadState]}
           </div>
 
           <div className="space-y-4 pb-[calc(env(safe-area-inset-bottom)+24px)]">
