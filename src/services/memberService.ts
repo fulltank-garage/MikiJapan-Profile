@@ -1,4 +1,5 @@
 import { api } from '../lib/api'
+import type { LineIdentity } from '../lib/liff'
 
 export type RegisteredMember = {
   id?: string
@@ -24,7 +25,7 @@ export const fallbackMember: RegisteredMember = {
   storefrontImageUrl: '',
 }
 
-const profileEndpoint = '/auth/profile'
+const profileEndpoint = import.meta.env.VITE_MEMBER_PROFILE_ENDPOINT ?? '/auth/profile'
 
 const getFirstValue = (...values: Array<string | null | undefined>) =>
   values.find((value) => value?.trim())?.trim()
@@ -50,10 +51,30 @@ const getProfileParams = () => {
   }
 }
 
-export const getRegisteredMember = async () => {
+export const getRegisteredMember = async (lineIdentity?: LineIdentity) => {
   const { data } = await api.get<RegisteredMember>(profileEndpoint, {
     params: getProfileParams(),
+    headers: getLineHeaders(lineIdentity),
   })
 
   return data
+}
+
+const getLineHeaders = (lineIdentity?: LineIdentity) => {
+  const headers: Record<string, string> = {}
+
+  if (lineIdentity?.lineUserId) {
+    headers['X-Line-User-Id'] = lineIdentity.lineUserId
+  }
+  if (lineIdentity?.lineIdToken) {
+    headers['X-Line-ID-Token'] = lineIdentity.lineIdToken
+  }
+  if (lineIdentity?.lineDisplayName) {
+    headers['X-Line-Display-Name'] = lineIdentity.lineDisplayName
+  }
+  if (lineIdentity?.linePictureUrl) {
+    headers['X-Line-Picture-Url'] = lineIdentity.linePictureUrl
+  }
+
+  return headers
 }

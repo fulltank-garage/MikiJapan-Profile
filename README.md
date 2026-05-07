@@ -34,6 +34,8 @@ Set the API host with:
 
 ```bash
 VITE_API_BASE_URL=https://your-api.example.com/api
+VITE_MEMBER_PROFILE_ENDPOINT=/auth/profile
+VITE_LIFF_ID=2010003223-KfDmnya6
 ```
 
 The profile page calls the `MikiJapan-Api` profile router:
@@ -42,7 +44,7 @@ The profile page calls the `MikiJapan-Api` profile router:
 GET /api/auth/profile
 ```
 
-Supported lookup values can be passed by URL query or Vite env:
+The LIFF app sends `lineUserId` and `lineIdToken` to the API with request headers. For local dev, supported lookup values can still be passed by URL query or Vite env:
 
 ```text
 ?lineUserId=<LINE_USER_ID>

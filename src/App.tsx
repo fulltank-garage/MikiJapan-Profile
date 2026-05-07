@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import mikiJapanLogo from './assets/miki-japan-logo.jpg'
+import { getLineIdentity, isLiffLoginRedirectError } from './lib/liff'
 import {
   fallbackMember,
   getRegisteredMember,
@@ -13,6 +14,14 @@ type MemberField = {
 }
 
 const getDisplayValue = (value: string) => value || '-'
+
+const getLoadErrorMessage = (error: unknown) => {
+  const apiMessage = (
+    error as { response?: { data?: { message?: string } } }
+  )?.response?.data?.message
+
+  return apiMessage ?? 'ไม่สามารถโหลดข้อมูลสมาชิกได้'
+}
 
 const getMemberFields = (member: RegisteredMember): MemberField[] => [
   { label: 'ชื่อ', value: member.firstName },
@@ -29,17 +38,24 @@ const getMemberFields = (member: RegisteredMember): MemberField[] => [
 
 function App() {
   const [member, setMember] = useState<RegisteredMember>(fallbackMember)
+  const [notice, setNotice] = useState('')
 
   useEffect(() => {
     let ignore = false
 
-    getRegisteredMember()
+    getLineIdentity()
+      .then((lineIdentity) => getRegisteredMember(lineIdentity))
       .then((memberData) => {
         if (!ignore) {
           setMember(memberData)
+          setNotice('')
         }
       })
-      .catch(() => undefined)
+      .catch((error) => {
+        if (!ignore && !isLiffLoginRedirectError(error)) {
+          setNotice(getLoadErrorMessage(error))
+        }
+      })
 
     return () => {
       ignore = true
@@ -78,6 +94,15 @@ function App() {
               ข้อมูลผู้สมัคร ลิงก์ร้านหรือเพจ และรูปหน้าร้านสำหรับติดต่อกลับ
             </p>
           </div>
+
+          {notice ? (
+            <div
+              className="mb-4 rounded-2xl border border-[color:var(--color-error)]/25 bg-[#fff1eb] px-4 py-3 text-sm leading-6 text-[var(--color-error)]"
+              role="status"
+            >
+              {notice}
+            </div>
+          ) : null}
 
           <div className="space-y-4 pb-[calc(env(safe-area-inset-bottom)+24px)]">
             <div className="grid grid-cols-2 gap-3">
