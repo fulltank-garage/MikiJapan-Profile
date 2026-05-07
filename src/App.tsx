@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import mikiJapanLogo from './assets/miki-japan-logo.jpg'
 import { getLineIdentity, isLiffLoginRedirectError } from './lib/liff'
 import {
@@ -12,6 +12,8 @@ type MemberField = {
   value: string
   href?: string
 }
+
+type MemberViewStatus = 'loading' | 'member' | 'pending' | 'rejected' | 'error'
 
 const getDisplayValue = (value: string) => value || '-'
 
@@ -37,33 +39,58 @@ const getMemberFields = (member: RegisteredMember): MemberField[] => [
 ]
 
 function App() {
-  const [member, setMember] = useState<RegisteredMember>(fallbackMember)
+  const [member, setMember] = useState<RegisteredMember | null>(null)
+  const [viewStatus, setViewStatus] = useState<MemberViewStatus>('loading')
   const [notice, setNotice] = useState('')
 
-  useEffect(() => {
-    let ignore = false
+  const loadMember = useCallback(
+    async () => {
+      try {
+        const lineIdentity = await getLineIdentity()
+        const memberData = await getRegisteredMember(lineIdentity)
+        const status = memberData.status ?? 'pending'
 
-    getLineIdentity()
-      .then((lineIdentity) => getRegisteredMember(lineIdentity))
-      .then((memberData) => {
-        if (!ignore) {
-          setMember(memberData)
-          setNotice('')
+        setMember(memberData)
+        setNotice('')
+
+        if (status === 'approved') {
+          setViewStatus('member')
+        } else if (status === 'rejected') {
+          setViewStatus('rejected')
+        } else {
+          setViewStatus('pending')
         }
-      })
-      .catch((error) => {
-        if (!ignore && !isLiffLoginRedirectError(error)) {
+      } catch (error) {
+        if (!isLiffLoginRedirectError(error)) {
+          setMember(null)
           setNotice(getLoadErrorMessage(error))
+          setViewStatus('error')
         }
-      })
+      }
+    },
+    [],
+  )
 
-    return () => {
-      ignore = true
+  useEffect(() => {
+    void Promise.resolve().then(loadMember)
+  }, [loadMember])
+
+  useEffect(() => {
+    if (viewStatus !== 'pending') {
+      return undefined
     }
-  }, [])
 
-  const fields = getMemberFields(member)
-  const storefrontImage = member.storefrontImageUrl ?? member.storefrontImage
+    const intervalId = window.setInterval(() => {
+      loadMember()
+    }, 10000)
+
+    return () => window.clearInterval(intervalId)
+  }, [loadMember, viewStatus])
+
+  const displayMember = member ?? fallbackMember
+  const fields = getMemberFields(displayMember)
+  const storefrontImage =
+    displayMember.storefrontImageUrl ?? displayMember.storefrontImage
 
   return (
     <main className="min-h-dvh bg-[var(--color-bg)] text-[var(--color-text)]">
@@ -89,13 +116,15 @@ function App() {
         </header>
 
         <section className="flex-1 px-4 py-5">
-          <div className="mb-5">
-            <p className="text-[15px] leading-6 text-[var(--color-muted)]">
-              ข้อมูลผู้สมัคร ลิงก์ร้านหรือเพจ และรูปหน้าร้านสำหรับติดต่อกลับ
-            </p>
-          </div>
+          {viewStatus === 'member' ? (
+            <div className="mb-5">
+              <p className="text-[15px] leading-6 text-[var(--color-muted)]">
+                ข้อมูลผู้สมัคร ลิงก์ร้านหรือเพจ และรูปหน้าร้านสำหรับติดต่อกลับ
+              </p>
+            </div>
+          ) : null}
 
-          {notice ? (
+          {notice && viewStatus === 'error' ? (
             <div
               className="mb-4 rounded-2xl border border-[color:var(--color-error)]/25 bg-[#fff1eb] px-4 py-3 text-sm leading-6 text-[var(--color-error)]"
               role="status"
@@ -104,6 +133,49 @@ function App() {
             </div>
           ) : null}
 
+          {viewStatus === 'loading' ? (
+            <div
+              className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-8 text-center"
+              role="status"
+            >
+              <p className="text-base font-semibold text-[var(--color-text)]">
+                กำลังโหลดข้อมูลสมาชิก
+              </p>
+              <p className="mt-2 text-sm leading-6 text-[var(--color-muted)]">
+                กรุณารอสักครู่
+              </p>
+            </div>
+          ) : null}
+
+          {viewStatus === 'pending' ? (
+            <div
+              className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-8 text-center"
+              role="status"
+            >
+              <p className="text-base font-semibold text-[var(--color-text)]">
+                รอตรวจสอบข้อมูล
+              </p>
+              <p className="mt-2 text-sm leading-6 text-[var(--color-muted)]">
+                ร้านได้รับข้อมูลการสมัครแล้ว กรุณารอตรวจสอบสักครู่
+              </p>
+            </div>
+          ) : null}
+
+          {viewStatus === 'rejected' ? (
+            <div
+              className="rounded-2xl border border-[color:var(--color-error)]/25 bg-[#fff1eb] px-4 py-8 text-center"
+              role="status"
+            >
+              <p className="text-base font-semibold text-[var(--color-error)]">
+                ข้อมูลไม่ผ่านเกณฑ์ที่ร้านกำหนด
+              </p>
+              <p className="mt-2 text-sm leading-6 text-[var(--color-muted)]">
+                กรุณาติดต่อร้านผ่านแชท LINE เพื่อสอบถามรายละเอียดเพิ่มเติม
+              </p>
+            </div>
+          ) : null}
+
+          {viewStatus === 'member' ? (
           <div className="space-y-4 pb-[calc(env(safe-area-inset-bottom)+24px)]">
             <div className="grid grid-cols-2 gap-3">
               {fields.slice(0, 2).map((field) => (
@@ -163,6 +235,7 @@ function App() {
               </div>
             </div>
           </div>
+          ) : null}
         </section>
       </div>
     </main>
