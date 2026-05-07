@@ -12,8 +12,6 @@ type MemberField = {
   href?: string
 }
 
-const memberEndpoint = import.meta.env.VITE_MEMBER_PROFILE_ENDPOINT
-
 const getDisplayValue = (value: string) => value || '-'
 
 const getMemberFields = (member: RegisteredMember): MemberField[] => [
@@ -33,10 +31,6 @@ function App() {
   const [member, setMember] = useState<RegisteredMember>(fallbackMember)
 
   useEffect(() => {
-    if (!memberEndpoint) {
-      return
-    }
-
     let ignore = false
 
     getRegisteredMember()
