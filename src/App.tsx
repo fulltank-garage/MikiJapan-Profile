@@ -15,6 +15,8 @@ type MemberField = {
 
 type MemberViewStatus = 'loading' | 'member' | 'pending' | 'rejected' | 'error'
 
+const skeletonFieldRows = ['field-1', 'field-2', 'field-3', 'field-4']
+
 const getDisplayValue = (value: string) => value || '-'
 
 const getLoadErrorMessage = (error: unknown) => {
@@ -37,6 +39,43 @@ const getMemberFields = (member: RegisteredMember): MemberField[] => [
     href: member.shopPageUrl,
   },
 ]
+
+function MemberProfileSkeleton() {
+  return (
+    <div
+      className="space-y-4 pb-[calc(env(safe-area-inset-bottom)+24px)]"
+      role="status"
+    >
+      <span className="sr-only">กำลังโหลดข้อมูลสมาชิก</span>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
+          <div className="skeleton-shimmer h-4 w-14" />
+          <div className="skeleton-shimmer mt-4 h-12 w-full" />
+        </div>
+        <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
+          <div className="skeleton-shimmer h-4 w-20" />
+          <div className="skeleton-shimmer mt-4 h-12 w-full" />
+        </div>
+      </div>
+
+      {skeletonFieldRows.map((row) => (
+        <div
+          className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4"
+          key={row}
+        >
+          <div className="skeleton-shimmer h-4 w-24" />
+          <div className="skeleton-shimmer mt-4 h-12 w-full" />
+        </div>
+      ))}
+
+      <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
+        <div className="skeleton-shimmer h-4 w-24" />
+        <div className="skeleton-shimmer mt-4 aspect-[4/3] w-full rounded-xl" />
+      </div>
+    </div>
+  )
+}
 
 function App() {
   const [member, setMember] = useState<RegisteredMember | null>(null)
@@ -134,17 +173,7 @@ function App() {
           ) : null}
 
           {viewStatus === 'loading' ? (
-            <div
-              className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-8 text-center"
-              role="status"
-            >
-              <p className="text-base font-semibold text-[var(--color-text)]">
-                กำลังโหลดข้อมูลสมาชิก
-              </p>
-              <p className="mt-2 text-sm leading-6 text-[var(--color-muted)]">
-                กรุณารอสักครู่
-              </p>
-            </div>
+            <MemberProfileSkeleton />
           ) : null}
 
           {viewStatus === 'pending' ? (
@@ -176,65 +205,65 @@ function App() {
           ) : null}
 
           {viewStatus === 'member' ? (
-          <div className="space-y-4 pb-[calc(env(safe-area-inset-bottom)+24px)]">
-            <div className="grid grid-cols-2 gap-3">
-              {fields.slice(0, 2).map((field) => (
+            <div className="space-y-4 pb-[calc(env(safe-area-inset-bottom)+24px)]">
+              <div className="grid grid-cols-2 gap-3">
+                {fields.slice(0, 2).map((field) => (
+                  <div
+                    className="block text-sm font-medium text-[var(--color-text)]"
+                    key={field.label}
+                  >
+                    {field.label}
+                    <div className="mt-1.5 flex min-h-12 w-full items-center rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-base text-[var(--color-text)]">
+                      <span className="break-words">
+                        {getDisplayValue(field.value)}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {fields.slice(2).map((field) => (
                 <div
                   className="block text-sm font-medium text-[var(--color-text)]"
                   key={field.label}
                 >
                   {field.label}
                   <div className="mt-1.5 flex min-h-12 w-full items-center rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-base text-[var(--color-text)]">
-                    <span className="break-words">
-                      {getDisplayValue(field.value)}
-                    </span>
+                    {field.href && field.value ? (
+                      <a
+                        className="break-all text-[var(--color-primary-dark)] underline decoration-[color:var(--color-primary)]/35 underline-offset-4"
+                        href={field.href}
+                        rel="noreferrer"
+                        target="_blank"
+                      >
+                        {field.value}
+                      </a>
+                    ) : (
+                      <span className="break-words">
+                        {getDisplayValue(field.value)}
+                      </span>
+                    )}
                   </div>
                 </div>
               ))}
-            </div>
 
-            {fields.slice(2).map((field) => (
-              <div
-                className="block text-sm font-medium text-[var(--color-text)]"
-                key={field.label}
-              >
-                {field.label}
-                <div className="mt-1.5 flex min-h-12 w-full items-center rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-base text-[var(--color-text)]">
-                  {field.href && field.value ? (
-                    <a
-                      className="break-all text-[var(--color-primary-dark)] underline decoration-[color:var(--color-primary)]/35 underline-offset-4"
-                      href={field.href}
-                      rel="noreferrer"
-                      target="_blank"
-                    >
-                      {field.value}
-                    </a>
+              <div className="block text-sm font-medium text-[var(--color-text)]">
+                รูปหน้าร้าน
+                <div className="mt-1.5 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3">
+                  {storefrontImage ? (
+                    <img
+                      alt="รูปหน้าร้าน"
+                      className="aspect-[4/3] w-full rounded-xl object-cover"
+                      src={storefrontImage}
+                    />
                   ) : (
-                    <span className="break-words">
-                      {getDisplayValue(field.value)}
-                    </span>
+                    <div className="grid aspect-[4/3] w-full place-items-center rounded-xl bg-[var(--color-surface-strong)] px-5 text-center text-sm leading-6 text-[var(--color-muted)]">
+                      ยังไม่มีรูปหน้าร้าน
+                    </div>
                   )}
                 </div>
               </div>
-            ))}
-
-            <div className="block text-sm font-medium text-[var(--color-text)]">
-              รูปหน้าร้าน
-              <div className="mt-1.5 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3">
-                {storefrontImage ? (
-                  <img
-                    alt="รูปหน้าร้าน"
-                    className="aspect-[4/3] w-full rounded-xl object-cover"
-                    src={storefrontImage}
-                  />
-                ) : (
-                  <div className="grid aspect-[4/3] w-full place-items-center rounded-xl bg-[var(--color-surface-strong)] px-5 text-center text-sm leading-6 text-[var(--color-muted)]">
-                    ยังไม่มีรูปหน้าร้าน
-                  </div>
-                )}
-              </div>
             </div>
-          </div>
           ) : null}
         </section>
       </div>
