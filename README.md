@@ -4,6 +4,8 @@ React + TypeScript member display page built with Vite, Tailwind CSS, and axios.
 
 ## Scripts
 
+Use Node.js 24.x.
+
 ```bash
 npm install
 npm run dev
@@ -45,6 +47,8 @@ GET /api/auth/profile
 ```
 
 The LIFF app sends `lineUserId` and `lineIdToken` to the API with request headers. For local dev, supported lookup values can still be passed by URL query or Vite env:
+
+Production builds require `VITE_API_BASE_URL`; local `http://localhost:8080/api` is only used in dev mode.
 
 ```text
 ?lineUserId=<LINE_USER_ID>
