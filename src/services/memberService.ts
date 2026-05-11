@@ -30,17 +30,19 @@ const profileEndpoint = import.meta.env.VITE_MEMBER_PROFILE_ENDPOINT ?? '/auth/p
 const getFirstValue = (...values: Array<string | null | undefined>) =>
   values.find((value) => value?.trim())?.trim()
 
-const getProfileParams = () => {
+const getProfileParams = (lineIdentity?: LineIdentity) => {
   const searchParams = new URLSearchParams(window.location.search)
   const lineUserId = getFirstValue(
     searchParams.get('lineUserId'),
     searchParams.get('line_user_id'),
     import.meta.env.VITE_LINE_USER_ID,
+    lineIdentity?.lineUserId,
   )
   const lineIdToken = getFirstValue(
     searchParams.get('lineIdToken'),
     searchParams.get('line_id_token'),
     import.meta.env.VITE_LINE_ID_TOKEN,
+    lineIdentity?.lineIdToken,
   )
   const id = getFirstValue(searchParams.get('id'), import.meta.env.VITE_MEMBER_ID)
 
@@ -53,7 +55,7 @@ const getProfileParams = () => {
 
 export const getRegisteredMember = async (lineIdentity?: LineIdentity) => {
   const { data } = await api.get<RegisteredMember>(profileEndpoint, {
-    params: getProfileParams(),
+    params: getProfileParams(lineIdentity),
     headers: getLineHeaders(lineIdentity),
   })
 

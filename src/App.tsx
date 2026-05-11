@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 import mikiJapanLogo from './assets/miki-japan-logo.jpg'
-import { getLineIdentity, isLiffLoginRedirectError } from './lib/liff'
+import {
+  getLineIdentity,
+  isLiffLoginRedirectError,
+  refreshLineLogin,
+} from './lib/liff'
 import {
   fallbackMember,
   getRegisteredMember,
@@ -25,6 +29,18 @@ const getLoadErrorMessage = (error: unknown) => {
   )?.response?.data?.message
 
   return apiMessage ?? 'ไม่สามารถโหลดข้อมูลสมาชิกได้'
+}
+
+const isLineSessionError = (error: unknown) => {
+  const apiMessage = (
+    error as { response?: { data?: { message?: string } } }
+  )?.response?.data?.message
+  const errorMessage = error instanceof Error ? error.message : ''
+  const message = `${apiMessage ?? ''} ${errorMessage}`.toLowerCase()
+
+  return /lineidtoken|line_id_token|idtoken|id token|token|expired|ยืนยันตัวตน/.test(
+    message,
+  )
 }
 
 const getMemberFields = (member: RegisteredMember): MemberField[] => [
@@ -101,6 +117,16 @@ function App() {
         }
       } catch (error) {
         if (!isLiffLoginRedirectError(error)) {
+          if (isLineSessionError(error)) {
+            try {
+              await refreshLineLogin()
+            } catch (refreshError) {
+              if (isLiffLoginRedirectError(refreshError)) {
+                return
+              }
+            }
+          }
+
           setMember(null)
           setNotice(getLoadErrorMessage(error))
           setViewStatus('error')
