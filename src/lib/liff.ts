@@ -16,7 +16,8 @@ class LiffLoginRedirectError extends Error {
 
 let initPromise: Promise<void> | null = null
 
-const getLiffId = () => import.meta.env.VITE_LIFF_ID?.trim()
+const defaultProfileLiffId = '2010003223-KfDmnya6'
+const getLiffId = () => import.meta.env.VITE_LIFF_ID?.trim() || defaultProfileLiffId
 const getLiffUrl = (liffId: string) => `https://liff.line.me/${liffId}`
 const getCleanRedirectUri = () =>
   `${window.location.origin}${window.location.pathname}`
